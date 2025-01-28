@@ -1,0 +1,23 @@
+﻿<Window x:Class="Chip8.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Chip8"
+        mc:Ignorable="d"
+        Title="Chip 8" Height="500" Width="1000"
+        Focusable="True"
+        Icon="\assets\c8.ico">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Image Name="Image" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Menu VerticalAlignment="Top">
+            <MenuItem Header="Arquivo">
+                <MenuItem Header="Carregar ROM" Click="CarregarRom" />
+                <MenuItem Header="Sair" Click="Sair" />
+            </MenuItem>
+        </Menu>
+    </Grid>
+</Window>
