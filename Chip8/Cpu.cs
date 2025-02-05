@@ -83,26 +83,26 @@ public class Cpu
         
         switch (nibble)
         {
-            case 0x0: Opcode00(); break;
-            case 0x1: Opcode01(); break;
-            case 0x2: Opcode02(); break;
-            case 0x3: Opcode03(); break;
-            case 0x4: Opcode04(); break;
-            case 0x5: Opcode05(); break;
-            case 0x6: Opcode06(); break;
-            case 0x7: Opcode07(); break;
-            case 0x8: Opcode08(); break;
-            case 0x9: Opcode09(); break;
-            case 0xA: Opcode10(); break;
-            case 0xB: Opcode11(); break;
-            case 0xC: Opcode12(); break;
-            case 0xD: Opcode13(); break;
-            case 0xE: Opcode14(); break;
-            case 0xF: Opcode15(); break;
+            case 0x0: Opcode0nnn(); break;
+            case 0x1: Opcode1nnn(); break;
+            case 0x2: Opcode2nnn(); break;
+            case 0x3: Opcode3xkk(); break;
+            case 0x4: Opcode4xkk(); break;
+            case 0x5: Opcode5xy0(); break;
+            case 0x6: Opcode6xkk(); break;
+            case 0x7: Opcode7xkk(); break;
+            case 0x8: Opcode8xyn(); break;
+            case 0x9: Opcode9xy0(); break;
+            case 0xA: OpcodeAnnn(); break;
+            case 0xB: OpcodeBnnn(); break;
+            case 0xC: OpcodeCxkk(); break;
+            case 0xD: OpcodeDxyn(); break;
+            case 0xE: OpcodeExyn(); break;
+            case 0xF: OpcodeFxkk(); break;
             default: Console.WriteLine("Opcode desconhecido."); break;
         }
     }
-    private void Opcode00()
+    private void Opcode0nnn()
     {
         switch (opcode)
         {
@@ -117,12 +117,12 @@ public class Cpu
 
     }
 
-    private void Opcode01()
+    private void Opcode1nnn()
     {
         //Define o Program Counter um valor informado no Opcode.
         programCounter = (ushort)(opcode & 0x0FFF);
     }
-    private void Opcode02()
+    private void Opcode2nnn()
     {
         //Começa uma subrotina guardando o Program Counter na pilha.
         stack[stackPointer] = programCounter;
@@ -130,7 +130,7 @@ public class Cpu
         programCounter = (ushort)(opcode & 0x0FFF);
     }
 
-    private void Opcode03()
+    private void Opcode3xkk()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
@@ -142,7 +142,7 @@ public class Cpu
  
     }
 
-    private void Opcode04()
+    private void Opcode4xkk()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
@@ -154,7 +154,7 @@ public class Cpu
         
     }
 
-    private void Opcode05()
+    private void Opcode5xy0()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte vy = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
@@ -166,7 +166,7 @@ public class Cpu
         
     }
         
-    private void Opcode06()
+    private void Opcode6xkk()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
@@ -175,7 +175,7 @@ public class Cpu
         
     }
 
-    private void Opcode07()
+    private void Opcode7xkk()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
@@ -184,11 +184,13 @@ public class Cpu
         
     }
 
-    private void Opcode08()
+    private void Opcode8xyn()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte vy = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
         byte operation = (byte)(opcode & 0x000F); //O quarto nibble define a operação a ser realizada.
+        byte x;
+        byte y;
         switch (operation)
         {
             //Registrador X recebe valor no registrador Y.
@@ -200,74 +202,39 @@ public class Cpu
             //Registrador X recebe operação lógica OU EXCLUSIVO do valor no registrador Y.
             case 3: registers[vx] ^= registers[vy]; registers[15] = 0; break;
             case 4:
-                //Registrador X recebe o valor da soma com registrador Y.
-                ushort sum = (ushort)(registers[vx] + registers[vy]);
-                /*
-                 * Se o valor da soma for maior que 255, o bit de overflow deve ser definido.
-                 * Este bit fica na posição 15 dos registradores.
-                 */
-                registers[15] = (byte)(sum > 255 ? 1 : 0);
-                /*
-                 * A soma então deve ser operada com a operação 
-                 * lógica E para garantir que o valor seja no máximo 255.
-                 */
-                registers[vx] = (byte)(sum & 0xFF);
-                /*
-                 * OBSERVAÇÃO: O bit de overflow é apenas um indicativo, e no Chip 8 não afeta a soma.
-                 * Em outros emuladores como de NES é necessário somar o bit de overflow na conta.
-                 */
+                x = registers[vx]; 
+                y = registers[vy];
+                registers[vx] = (byte)(x + y & 0xFF);
+                registers[15] = (byte)(x + y > 255 ? 1 : 0);
                 break;
             case 5:
-                /*
-                 * Se o valor da subtração for menor que 0, o bit de underflow deve ser definido.
-                 * Este bit fica na posição 15 dos registradores.
-                 */
-                registers[15] = (byte)(registers[vx] >= registers[vy] ? 1 : 0);
-                //Realiza a subtração.
-                registers[vx] -= registers[vy];
-                /*
-                 * OBSERVAÇÃO: O bit de underflow é apenas um indicativo, e no Chip 8 não afeta a subtração.
-                 * Em outros emuladores como de NES é necessário somar o bit de underflow na conta.
-                 */
+                x = registers[vx];
+                y = registers[vy];
+                registers[vx] = (byte)(x - y & 0xFF);
+                registers[15] = (byte)(x >= y ? 1 : 0);
                 break;
             case 6:
-                //Isola o bit menos significativo e guarda no Registrador 15.
-                registers[15] = (byte)(registers[vx] & 0x1);
-                /*
-                 * Desloca a posição de todos os bits uma posição para a direita.
-                 * Efetivamente serve como uma divisão rápida por 2.
-                 */
-                registers[vx] = registers[vy] >>= 1;
+                x = registers[vx];
+                y = registers[vy];
+                registers[vx] = (byte)(y >> 1);
+                registers[15] = (byte)(x & 0x1);
                 break;
             case 7:
-                /*
-                 * Se o valor da subtração for menor que 0, o bit de underflow deve ser definido.
-                 * Este bit fica na posição 15 dos registradores.
-                 */
-                registers[15] = (byte)(registers[vy] >= registers[vx] ? 1 : 0);
-                /*
-                 * Realiza uma subtração.
-                 * Diferente do caso 5, aqui subtraímos X de Y, depois guardamos o resultado em X.
-                 */
-                registers[vx] = (byte)((registers[vy] - registers[vx]) & 0xFF);
-                /*
-                 * OBSERVAÇÃO: O bit de underflow é apenas um indicativo, e no Chip 8 não afeta a subtração.
-                 * Em outros emuladores como de NES é necessário somar o bit de underflow na conta.
-                 */
+                x = registers[vx];
+                y = registers[vy];
+                registers[vx] = (byte)(y - x & 0xFF);
+                registers[15] = (byte)(y >= x ? 1 : 0);
                 break;
             case 0xE:
-                //Isola o bit mais significativo e guarda no Registrador 15.
-                registers[15] = (byte)((registers[vx] & 0x80) >> 7);
-                /*
-                 * Desloca a posição de todos os bits uma posição para a esquerda.
-                 * Efetivamente serve como uma multiplicação rápida por 2.
-                 */
-                registers[vx] = registers[vy] <<= 1;
+                x = registers[vx];
+                y = registers[vy];
+                registers[vx] = (byte)(y << 1);
+                registers[15] = (byte)((x & 0x80) >> 7);
                 break;
         }
         
     }
-    private void Opcode09()
+    private void Opcode9xy0()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte vy = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
@@ -276,18 +243,18 @@ public class Cpu
         
     }
 
-    private void Opcode10()
+    private void OpcodeAnnn()
     {
         //Index recebe o valor indicado no opcode.
         index = (ushort)(opcode & 0x0FFF);
     }
 
-    private void Opcode11()
+    private void OpcodeBnnn()
     {
         //PC é definido com a soma do registrador 0 mais o valor indicado no opcode.
         programCounter = (ushort)(registers[0] + (opcode & 0x0FFF));
     }
-    private void Opcode12()
+    private void OpcodeCxkk()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
@@ -300,7 +267,7 @@ public class Cpu
        
     }
 
-    private void Opcode13()
+    private void OpcodeDxyn()
     {
         byte vx = registers[(opcode & 0x0F00) >> 8]; //Isola o segundo nibble (registrador X).
         byte vy = registers[(opcode & 0x00F0) >> 4]; //Isola o terceiro nibble (registrador Y).
@@ -338,7 +305,7 @@ public class Cpu
             }
         }
     }
-    private void Opcode14()
+    private void OpcodeExyn()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte keyCode = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
@@ -348,7 +315,7 @@ public class Cpu
         
     }
 
-    private void Opcode15()
+    private void OpcodeFxkk()
     {
         byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte op = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
