@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -19,6 +20,16 @@ public partial class MainWindow : Window
     public WriteableBitmap bitmap;
     public const int LARGURA_TELA = 64;
     public const int ALTURA_TELA = 32;
+    //Cria um relógio de 1ms.
+    DispatcherTimer cpuTimer = new DispatcherTimer
+    {
+        Interval = TimeSpan.FromMilliseconds(1) 
+    };
+    //Cria um segundo relógio para os frames.
+    DispatcherTimer drawTimer = new DispatcherTimer
+    {
+        Interval = TimeSpan.FromMilliseconds(16)
+    };
     private Cpu cpu;
     
     public MainWindow()
@@ -67,39 +78,31 @@ public partial class MainWindow : Window
         {
             cpu.memory[i] = rom[i - 0x200];
         }
-        //Cria um relógio de 1ms.
-        var cpuTimer = new DispatcherTimer
+        //Para o timer.
+        cpuTimer.Stop();
+        //Limpa o timer se for um novo ciclo de rom.
+        cpuTimer = null;
+        //Cria o timer novamente.
+        cpuTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromMilliseconds(1) 
+            Interval = TimeSpan.FromMilliseconds(1)
         };
-        //Chama a execução do clock da CPU. Executa 5 vezes por ms resultando em um clock de 5mhz.
-        cpuTimer.Tick += (s, args) =>
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                ProcessarCiclo();
-            }
-        };
-        
+        //Atribui o clock ao timer.
+        cpuTimer.Tick += (s, args) => Clock();
+        //Inicia o timer.
         cpuTimer.Start();
-        //Cria um segundo relógio para os frames.
-        var drawTimer = new DispatcherTimer
+        //Para o timer.
+        drawTimer.Stop();
+        //Limpa o timer se for um novo ciclo de rom.
+        drawTimer = null;
+        //Cria o timer novamente.
+        drawTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(16)
         };
-        //Desenha um novo frame na tela a cada 16ms, resultando em algo perto de 60 fps.
-        drawTimer.Tick += (s, args) =>
-        {
-            DesenharFrame(cpu.display);
-            //Os timers são reduzidos numa frequência de 60hz, então aproveito o timer de frames.
-            if (cpu.delayTimer > 0) cpu.delayTimer--;
-            if (cpu.soundTimer > 0)
-            {
-                //Cada bipe dura 1 frame.
-                Console.Beep(440,16);
-                cpu.soundTimer--;
-            }
-        };
+        //Atribui o render ao timer.
+        drawTimer.Tick += (s, args) => Render();
+        //Inicia o timer.
         drawTimer.Start();
     }
 
@@ -107,7 +110,7 @@ public partial class MainWindow : Window
     {
         /*
          * Processo de execução do emulador por ciclo. Começa criando um número de 16 bits com a instrução.
-         * O processador  do Chip8 manipula apenas 8 bits, mas suas instruções são em 16. Portanto, é
+         * O processador do Chip8 manipula apenas 8 bits, mas suas instruções são em 16. Portanto, é
          * necessário concatenar dois espaços de memória para formar uma instrução.
          */
         ushort opcode = (ushort)((cpu.memory[cpu.programCounter] << 8) | cpu.memory[cpu.programCounter + 1]);
@@ -157,5 +160,26 @@ public partial class MainWindow : Window
         cpu.keypad[13] = (byte)(Keyboard.IsKeyDown(Key.X) ? 1 : 0); // X
         cpu.keypad[14] = (byte)(Keyboard.IsKeyDown(Key.C) ? 1 : 0); // C
         cpu.keypad[15] = (byte)(Keyboard.IsKeyDown(Key.V) ? 1 : 0); // V
+    }
+    private void Clock()
+    {
+        //Faz processar o ciclo 5 vezes por 1ms.
+        for (int i = 0; i < 5; i++)
+        {
+            ProcessarCiclo();
+        }
+    }
+
+    private void Render()
+    {
+        DesenharFrame(cpu.display);
+        //Os timers são reduzidos numa frequência de 60hz, então aproveito o timer de frames.
+        if (cpu.delayTimer > 0) cpu.delayTimer--;
+        if (cpu.soundTimer > 0)
+        {
+            //Cada bipe dura 1 frame.
+            Console.Beep(440,16);
+            cpu.soundTimer--;
+        }
     }
 }

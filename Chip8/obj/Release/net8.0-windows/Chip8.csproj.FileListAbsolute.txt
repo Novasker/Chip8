@@ -18,3 +18,4 @@ C:\Users\Novaski\RiderProjects\Chip8\Chip8\obj\Release\net8.0-windows\refint\Chi
 C:\Users\Novaski\RiderProjects\Chip8\Chip8\obj\Release\net8.0-windows\Chip8.pdb
 C:\Users\Novaski\RiderProjects\Chip8\Chip8\obj\Release\net8.0-windows\Chip8.genruntimeconfig.cache
 C:\Users\Novaski\RiderProjects\Chip8\Chip8\obj\Release\net8.0-windows\ref\Chip8.dll
+C:\Users\Novaski\RiderProjects\Chip8\Chip8\obj\Release\net8.0-windows\Chip8.sourcelink.json

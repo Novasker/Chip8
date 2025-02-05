@@ -18,7 +18,25 @@ public class Cpu
     public byte[] keypad = new byte[16]; //Guarda as teclas pressionadas.
     public uint[] display = new uint[LARGURA_VIDEO * ALTURA_VIDEO]; //Vetor de pixels do display.
     public ushort opcode; //Guarda a instrução atual.
-    
+    public byte[] fontes = //Guarda o sprite das fontes.
+    {
+        0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+        0x20, 0x60, 0x20, 0x20, 0x70, // 1
+        0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+        0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+        0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+        0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+        0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+        0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+        0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+        0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+        0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+        0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+        0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+        0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+        0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+        0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+    };
     public void Inicializar()
     {
         /*
@@ -40,6 +58,10 @@ public class Cpu
         Array.Clear(stack, 0, stack.Length);
         Array.Clear(keypad, 0, keypad.Length);
         Array.Clear(display, 0, display.Length);
+        for (int i = 0; i < fontes.Length; i++)
+        {
+            memory[i] = fontes[i];
+        }
     }
     
     /*
@@ -172,11 +194,11 @@ public class Cpu
             //Registrador X recebe valor no registrador Y.
             case 0: registers[vx] = registers[vy]; break; 
             //Registrador X recebe operação lógica OU do valor no registrador Y.
-            case 1: registers[vx] |= registers[vy]; break;
+            case 1: registers[vx] |= registers[vy]; registers[15] = 0; break;
             //Registrador X recebe operação lógica E do valor no registrador Y.
-            case 2: registers[vx] &= registers[vy]; break;
+            case 2: registers[vx] &= registers[vy]; registers[15] = 0; break;
             //Registrador X recebe operação lógica OU EXCLUSIVO do valor no registrador Y.
-            case 3: registers[vx] ^= registers[vy]; break;
+            case 3: registers[vx] ^= registers[vy]; registers[15] = 0; break;
             case 4:
                 //Registrador X recebe o valor da soma com registrador Y.
                 ushort sum = (ushort)(registers[vx] + registers[vy]);
@@ -200,7 +222,7 @@ public class Cpu
                  * Se o valor da subtração for menor que 0, o bit de underflow deve ser definido.
                  * Este bit fica na posição 15 dos registradores.
                  */
-                registers[15] = (byte)(registers[vx] > registers[vy] ? 1 : 0);
+                registers[15] = (byte)(registers[vx] >= registers[vy] ? 1 : 0);
                 //Realiza a subtração.
                 registers[vx] -= registers[vy];
                 /*
@@ -215,19 +237,19 @@ public class Cpu
                  * Desloca a posição de todos os bits uma posição para a direita.
                  * Efetivamente serve como uma divisão rápida por 2.
                  */
-                registers[vx] >>= 1;
+                registers[vx] = registers[vy] >>= 1;
                 break;
             case 7:
                 /*
                  * Se o valor da subtração for menor que 0, o bit de underflow deve ser definido.
                  * Este bit fica na posição 15 dos registradores.
                  */
-                registers[15] = (byte)(registers[vy] > registers[vx] ? 1 : 0);
+                registers[15] = (byte)(registers[vy] >= registers[vx] ? 1 : 0);
                 /*
                  * Realiza uma subtração.
                  * Diferente do caso 5, aqui subtraímos X de Y, depois guardamos o resultado em X.
                  */
-                registers[vx] = (byte)(registers[vy] - registers[vx]);
+                registers[vx] = (byte)((registers[vy] - registers[vx]) & 0xFF);
                 /*
                  * OBSERVAÇÃO: O bit de underflow é apenas um indicativo, e no Chip 8 não afeta a subtração.
                  * Em outros emuladores como de NES é necessário somar o bit de underflow na conta.
@@ -240,7 +262,7 @@ public class Cpu
                  * Desloca a posição de todos os bits uma posição para a esquerda.
                  * Efetivamente serve como uma multiplicação rápida por 2.
                  */
-                registers[vx] <<= 1;
+                registers[vx] = registers[vy] <<= 1;
                 break;
         }
         
@@ -315,7 +337,6 @@ public class Cpu
                 }
             }
         }
-        
     }
     private void Opcode14()
     {

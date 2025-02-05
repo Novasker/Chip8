@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chip8"
         mc:Ignorable="d"
-        Title="Chip 8" Height="500" Width="1000"
+        Title="Chip 8" Height="600" Width="1000"
         Focusable="True"
         Icon="\assets\c8.ico">
     <Grid>
