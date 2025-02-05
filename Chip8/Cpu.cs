@@ -7,7 +7,7 @@ public class Cpu
     //Altura do display do Chip 8.
     private const int ALTURA_VIDEO = 32;
     
-    public byte[] registers = new byte[16]; //16 registradores de 1 byte.
+    public byte[] v = new byte[16]; //16 registradores de 1 byte geralmente chamados de "V".
     public byte[] memory = new byte[4096]; //4kb de memória.
     public ushort index; //Index usado em alguns opcodes.
     public ushort programCounter; //Program Counter, ou PC. Aponta para o endereço de memória que está usando.
@@ -50,7 +50,7 @@ public class Cpu
          */
         index = stackPointer = delayTimer = soundTimer = (byte)(opcode = 0);
         programCounter = 0x200;
-        Array.Clear(registers, 0, registers.Length);
+        Array.Clear(v, 0, v.Length);
         for (int i = 0; i < memory.Length; i++)
         {
             memory[i] = 0;
@@ -97,7 +97,7 @@ public class Cpu
             case 0xB: OpcodeBnnn(); break;
             case 0xC: OpcodeCxkk(); break;
             case 0xD: OpcodeDxyn(); break;
-            case 0xE: OpcodeExyn(); break;
+            case 0xE: OpcodeExkk(); break;
             case 0xF: OpcodeFxkk(); break;
             default: Console.WriteLine("Opcode desconhecido."); break;
         }
@@ -132,114 +132,131 @@ public class Cpu
 
     private void Opcode3xkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
         /*
          * Se o valor nos registradores na posição X for igual ao valor
          * de KK, incrementa o PC.
          */
-        if (registers[vx] == kk) programCounter += 2;
+        if (v[x] == kk) programCounter += 2;
  
     }
 
     private void Opcode4xkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
         /*
          * Se o valor nos registradores na posição X for diferente do valor
          * de KK, incrementa o PC.
          */
-        if (registers[vx] != kk) programCounter += 2;
+        if (v[x] != kk) programCounter += 2;
         
     }
 
     private void Opcode5xy0()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
-        byte vy = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte y = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
         /*
          * Se o valor nos registradores na posição X for igual
          * ao valor no registrador na posição Y, incrementa o PC.
          */
-        if (registers[vx] == registers[vy]) programCounter += 2;
+        if (v[x] == v[y]) programCounter += 2;
         
     }
         
     private void Opcode6xkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
         //Armazena o terceiro e quarto nibble no registrador X.
-        registers[vx] = kk;
+        v[x] = kk;
         
     }
 
     private void Opcode7xkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
         //Soma KK nos registradores.
-        registers[vx] += kk;
+        v[x] += kk;
         
     }
 
     private void Opcode8xyn()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
-        byte vy = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte y = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
         byte operation = (byte)(opcode & 0x000F); //O quarto nibble define a operação a ser realizada.
-        byte x;
-        byte y;
+        byte vx; //Armazena v na posição x.
+        byte vy; //Armazena v na posição y.
         switch (operation)
         {
             //Registrador X recebe valor no registrador Y.
-            case 0: registers[vx] = registers[vy]; break; 
+            case 0: v[x] = v[y]; break; 
             //Registrador X recebe operação lógica OU do valor no registrador Y.
-            case 1: registers[vx] |= registers[vy]; registers[15] = 0; break;
+            case 1: v[x] |= v[y]; v[15] = 0; break;
             //Registrador X recebe operação lógica E do valor no registrador Y.
-            case 2: registers[vx] &= registers[vy]; registers[15] = 0; break;
+            case 2: v[x] &= v[y]; v[15] = 0; break;
             //Registrador X recebe operação lógica OU EXCLUSIVO do valor no registrador Y.
-            case 3: registers[vx] ^= registers[vy]; registers[15] = 0; break;
+            case 3: v[x] ^= v[y]; v[15] = 0; break;
             case 4:
-                x = registers[vx]; 
-                y = registers[vy];
-                registers[vx] = (byte)(x + y & 0xFF);
-                registers[15] = (byte)(x + y > 255 ? 1 : 0);
+                //Armazena o valor dos registradores.
+                vx = v[x]; 
+                vy = v[y];
+                //Soma os valores e armazena de volta nos registradores.
+                v[x] = (byte)(vx + vy & 0xFF);
+                //Se a soma for maior que 255, define vF.
+                v[0xF] = (byte)(vx + vy > 255 ? 1 : 0);
                 break;
             case 5:
-                x = registers[vx];
-                y = registers[vy];
-                registers[vx] = (byte)(x - y & 0xFF);
-                registers[15] = (byte)(x >= y ? 1 : 0);
+                //Armazena o valor dos registradores.
+                vx = v[x];
+                vy = v[y];
+                //Subtrai os valores e armazena de volta nos registradores.
+                v[x] = (byte)(vx - vy & 0xFF);
+                //Se a subtração for menor que 0, define o vF.
+                v[0xF] = (byte)(vx >= vy ? 1 : 0);
                 break;
             case 6:
-                x = registers[vx];
-                y = registers[vy];
-                registers[vx] = (byte)(y >> 1);
-                registers[15] = (byte)(x & 0x1);
+                //Armazena o valor dos registradores.
+                vx = v[x];
+                vy = v[y];
+                //Desloca todos os bits de vY uma posição para a direita e armazena em vX. 
+                v[x] = (byte)(vy >> 1);
+                //Armazena o menor bit em vF.
+                v[0xF] = (byte)(vx & 0x1);
+                //Utilizado para realizar uma divisão rápida por 2.
                 break;
             case 7:
-                x = registers[vx];
-                y = registers[vy];
-                registers[vx] = (byte)(y - x & 0xFF);
-                registers[15] = (byte)(y >= x ? 1 : 0);
+                //Armazena o valor dos registradores.
+                vx = v[x];
+                vy = v[y];
+                //Subtrai os valores e armazena de volta nos registradores. Neste caso, subtraímos vX de vY.
+                v[x] = (byte)(vy - vx & 0xFF);
+                //Se a subtração for menor que 0, define vF.
+                v[0xF] = (byte)(vy >= vx ? 1 : 0);
                 break;
             case 0xE:
-                x = registers[vx];
-                y = registers[vy];
-                registers[vx] = (byte)(y << 1);
-                registers[15] = (byte)((x & 0x80) >> 7);
+                //Armazena o valor dos registradores.
+                vx = v[x];
+                vy = v[y];
+                //Desloca todos os bits de vY uma posição para a esquerda e armazena em vX.
+                v[x] = (byte)(vy << 1);
+                //Armazena o menor bit em vF.
+                v[0xF] = (byte)((vx & 0x80) >> 7);
+                //Utilizado para realizar uma multiplicação rápida por 2.
                 break;
         }
         
     }
     private void Opcode9xy0()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
-        byte vy = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte y = (byte)((opcode & 0x00F0) >> 4); //Isola o terceiro nibble.
         //Se o registrador X for diferente do registrador Y, incrementa o PC.
-        if (registers[vx] != registers[vy]) programCounter += 2;
+        if (v[x] != v[y]) programCounter += 2;
         
     }
 
@@ -252,77 +269,73 @@ public class Cpu
     private void OpcodeBnnn()
     {
         //PC é definido com a soma do registrador 0 mais o valor indicado no opcode.
-        programCounter = (ushort)(registers[0] + (opcode & 0x0FFF));
+        programCounter = (ushort)(v[0] + (opcode & 0x0FFF));
     }
     private void OpcodeCxkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
         byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
         Random random = new Random();
         /*
          * Registrador X recebe um valor aleatório entre 0 e 255.
          * É então realizado uma operação lógica E com esse valor e KK para definir o número aleatório.
          */ 
-        registers[vx] = (byte)(random.Next(0, 255) & kk);
+        v[x] = (byte)(random.Next(0, 255) & kk);
        
     }
 
     private void OpcodeDxyn()
     {
-        byte vx = registers[(opcode & 0x0F00) >> 8]; //Isola o segundo nibble (registrador X).
-        byte vy = registers[(opcode & 0x00F0) >> 4]; //Isola o terceiro nibble (registrador Y).
-        byte altura = (byte)(opcode & 0x000F); //Isola o quarto nibble (altura do sprite).
-        //Aqui o registrador 15 é a flag de colisão. Serve para verificar se 2 pixels colidiram.
-        registers[15] = 0;
-        //Percorre cada linha da altura do sprite.
-        for (int y = 0; y < altura; y++)
+        //Armazena o valor dos registradores, até um máximo do tamanho do display.
+        byte vx = (byte)(v[(opcode & 0x0F00) >> 8] % LARGURA_VIDEO);
+        byte vy = (byte)(v[(opcode & 0x00F0) >> 4] % ALTURA_VIDEO);
+        //Armazena a altura do sprite.
+        byte n = (byte)(opcode & 0x000F);
+        //vF é usado como o bit de colisão. Redefine no começo da instrução.
+        v[0xF] = 0;
+        //Para cada linha de altura, roda um loop
+        for (int y = 0; y < n && vy + y < ALTURA_VIDEO; y++)
         {
-            //O byte da sprite é informado a partir da posição no Index mais a altura.
+            //Armazena o byte com os gráficos a desenhar na altura desejada. 
             byte spriteByte = memory[index + y];
-            //Percorre os bits no byte da sprite.
-            for (int x = 0; x < 8; x++)
+            //Para cada bit no byte, percorre a coluna do sprite.
+            for (int x = 0; x < 8 && vx + x < LARGURA_VIDEO; x++)
             {
-                //Se o bit específico no byte for 1, começa a desenhar.
+                //Isola bit por bit do byte do sprite. Se for diferente de 0, desenhamos.
                 if ((spriteByte & (0x80 >> x)) != 0) 
                 {
-                    //Guarda a posição X do pixel.
-                    int posX = (vx + x) % LARGURA_VIDEO;
-                    //Guarda a posição Y do pixel.
-                    int posY = (vy + y) % ALTURA_VIDEO;
-                    //Salva a posição no vetor Display do pixel.
-                    int pixelIndex = posX + posY * LARGURA_VIDEO;
-                    //Se o display na posição do pixelIndex já for 1, houve uma colisão de pixels.
+                    //O display é um vetor contínuo, então multiplicamos tudo para achar a posição desejada.
+                    int pixelIndex = vx + x + (vy + y) * LARGURA_VIDEO;
+                    //Se o pixel no display já era 1, houve uma colisão.
                     if (display[pixelIndex] == 1)
                     {
-                        registers[15] = 1; 
+                        //Define vF com a colisão.
+                        v[0xF] = 1; 
                     }
-                    /*
-                     * Alterna o valor do pixel na tela, podendo efetivamente usar este método
-                     * para acender ou apagar um determinado pixel na tela.
-                     */ 
+                    //Alterna o pixel, efetivamente o ligando ou desligando.
                     display[pixelIndex] ^= 1; 
                 }
             }
         }
     }
-    private void OpcodeExyn()
+    private void OpcodeExkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
-        byte keyCode = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
         //Verifica se alguma tecla está ou não pressionada. Pode incrementar o PC.
-        if (keyCode == 0x9E && keypad[registers[vx]] != 0) programCounter += 2;
-        if (keyCode == 0xA1 && keypad[registers[vx]] == 0) programCounter += 2;
+        if (kk == 0x9E && keypad[v[x]] != 0) programCounter += 2;
+        if (kk == 0xA1 && keypad[v[x]] == 0) programCounter += 2;
         
     }
 
     private void OpcodeFxkk()
     {
-        byte vx = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
-        byte op = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
-        switch (op)
+        byte x = (byte)((opcode & 0x0F00) >> 8); //Isola o segundo nibble.
+        byte kk = (byte)(opcode & 0x00FF); //Isola o terceiro e quarto nibble.
+        switch (kk)
         {
             //Registrador X recebe o valor do delayTimer. 
-            case 0x07: registers[vx] = delayTimer; break;
+            case 0x07: v[x] = delayTimer; break;
             //Percorre o keypad para verificar se alguma tecla está pressionada.
             case 0x0A:
                 for (byte i = 0; i < 16; i++) 
@@ -330,33 +343,43 @@ public class Cpu
                     if (keypad[i] != 0) 
                     {
                         //Se estiver, guarda qual tecla está no registrador X.
-                        registers[vx] = i;
+                        v[x] = i;
                         return;
                     }
                 }
                 programCounter -= 2; // Se nenhuma tecla foi pressionada, retrocede o PC
                 break;
             //Define o delay timer.
-            case 0x15: delayTimer = registers[vx]; break;
+            case 0x15: delayTimer = v[x]; break;
             //Define o sound timer.
-            case 0x18: soundTimer = registers[vx]; break;
+            case 0x18: soundTimer = v[x]; break;
             //Define o index.
-            case 0x1E: index += registers[vx]; break;
+            case 0x1E: index += v[x]; break;
             //Define o index multiplicado por 5.
-            case 0x29: index = (ushort)(registers[vx] * 5); break;
+            case 0x29: index = (ushort)(v[x] * 5); break;
             //Separa um valor em binário em seus dígitos em decimal. Útil para exibir pontuação na tela.
             case 0x33:
-                memory[index] = (byte)(registers[vx] / 100);
-                memory[index + 1] = (byte)((registers[vx] / 10) % 10);
-                memory[index + 2] = (byte)(registers[vx] % 10);
+                memory[index] = (byte)(v[x] / 100);
+                memory[index + 1] = (byte)((v[x] / 10) % 10);
+                memory[index + 2] = (byte)(v[x] % 10);
                 break;
             //Armazena os registradores na memória.
             case 0x55:
-                for (byte i = 0; i <= vx; i++) memory[index + i] = registers[i];
+                for (byte i = 0; i <= x; i++)
+                {
+                    memory[index + i] = v[i];
+                }
+                //Incrementa o index.
+                index = (ushort)(index + x + 1);
                 break;
             //Armazena a memória nos registradores.
             case 0x65:
-                for (byte i = 0; i <= vx; i++) registers[i] = memory[index + i];
+                for (byte i = 0; i <= x; i++) 
+                {
+                    v[i] = memory[index + i];
+                }
+                //Incrementa o index.
+                index = (ushort)(index + x + 1);
                 break;
         }
     }
