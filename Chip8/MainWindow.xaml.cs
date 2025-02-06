@@ -144,22 +144,22 @@ public partial class MainWindow : Window
     }
     public void LerTeclas()
     {
-        cpu.keypad[0] = (byte)(Keyboard.IsKeyDown(Key.D1) ? 1 : 0); // 1
-        cpu.keypad[1] = (byte)(Keyboard.IsKeyDown(Key.D2) ? 1 : 0); // 2
-        cpu.keypad[2] = (byte)(Keyboard.IsKeyDown(Key.D3) ? 1 : 0); // 3
-        cpu.keypad[3] = (byte)(Keyboard.IsKeyDown(Key.D4) ? 1 : 0); // 4
-        cpu.keypad[4] = (byte)(Keyboard.IsKeyDown(Key.Q) ? 1 : 0);  // Q
-        cpu.keypad[5] = (byte)(Keyboard.IsKeyDown(Key.W) ? 1 : 0);  // W
-        cpu.keypad[6] = (byte)(Keyboard.IsKeyDown(Key.E) ? 1 : 0);  // E
-        cpu.keypad[7] = (byte)(Keyboard.IsKeyDown(Key.R) ? 1 : 0);  // R
-        cpu.keypad[8] = (byte)(Keyboard.IsKeyDown(Key.A) ? 1 : 0);  // A
-        cpu.keypad[9] = (byte)(Keyboard.IsKeyDown(Key.S) ? 1 : 0);  // S
-        cpu.keypad[10] = (byte)(Keyboard.IsKeyDown(Key.D) ? 1 : 0); // D
-        cpu.keypad[11] = (byte)(Keyboard.IsKeyDown(Key.F) ? 1 : 0); // F
-        cpu.keypad[12] = (byte)(Keyboard.IsKeyDown(Key.Z) ? 1 : 0); // Z
-        cpu.keypad[13] = (byte)(Keyboard.IsKeyDown(Key.X) ? 1 : 0); // X
-        cpu.keypad[14] = (byte)(Keyboard.IsKeyDown(Key.C) ? 1 : 0); // C
-        cpu.keypad[15] = (byte)(Keyboard.IsKeyDown(Key.V) ? 1 : 0); // V
+        cpu.keypad[1] = (byte)(Keyboard.IsKeyDown(Key.D1) ? 1 : 0);  // 1 -> 1
+        cpu.keypad[2] = (byte)(Keyboard.IsKeyDown(Key.D2) ? 1 : 0);  // 2 -> 2
+        cpu.keypad[3] = (byte)(Keyboard.IsKeyDown(Key.D3) ? 1 : 0);  // 3 -> 3
+        cpu.keypad[12] = (byte)(Keyboard.IsKeyDown(Key.D4) ? 1 : 0); // 4 -> C
+        cpu.keypad[4] = (byte)(Keyboard.IsKeyDown(Key.Q) ? 1 : 0);   // Q -> 4
+        cpu.keypad[5] = (byte)(Keyboard.IsKeyDown(Key.W) ? 1 : 0);   // W -> 5
+        cpu.keypad[6] = (byte)(Keyboard.IsKeyDown(Key.E) ? 1 : 0);   // E -> 6
+        cpu.keypad[13] = (byte)(Keyboard.IsKeyDown(Key.R) ? 1 : 0);  // R -> D
+        cpu.keypad[7] = (byte)(Keyboard.IsKeyDown(Key.A) ? 1 : 0);   // A -> 7
+        cpu.keypad[8] = (byte)(Keyboard.IsKeyDown(Key.S) ? 1 : 0);   // S -> 8
+        cpu.keypad[9] = (byte)(Keyboard.IsKeyDown(Key.D) ? 1 : 0);   // D -> 9
+        cpu.keypad[14] = (byte)(Keyboard.IsKeyDown(Key.F) ? 1 : 0);  // F -> E
+        cpu.keypad[10] = (byte)(Keyboard.IsKeyDown(Key.Z) ? 1 : 0);  // Z -> A
+        cpu.keypad[0] = (byte)(Keyboard.IsKeyDown(Key.X) ? 1 : 0);   // X -> 0
+        cpu.keypad[11] = (byte)(Keyboard.IsKeyDown(Key.C) ? 1 : 0);  // C -> B
+        cpu.keypad[15] = (byte)(Keyboard.IsKeyDown(Key.V) ? 1 : 0);  // V -> F
     }
     private void Clock()
     {
