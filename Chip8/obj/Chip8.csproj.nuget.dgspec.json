@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\lucas.novaski\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj": {}
+    "C:\\Users\\novas\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj": {}
   },
   "projects": {
-    "C:\\Users\\lucas.novaski\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj": {
+    "C:\\Users\\novas\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\lucas.novaski\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj",
+        "projectUniqueName": "C:\\Users\\novas\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj",
         "projectName": "Chip8",
-        "projectPath": "C:\\Users\\lucas.novaski\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj",
-        "packagesPath": "C:\\Users\\lucas.novaski\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\lucas.novaski\\RiderProjects\\Chip8\\Chip8\\obj\\",
+        "projectPath": "C:\\Users\\novas\\RiderProjects\\Chip8\\Chip8\\Chip8.csproj",
+        "packagesPath": "C:\\Users\\novas\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\novas\\RiderProjects\\Chip8\\Chip8\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\lucas.novaski\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\novas\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0-windows"
@@ -61,7 +61,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\lucas.novaski\\.dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Users\\novas\\.dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

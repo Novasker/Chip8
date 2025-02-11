@@ -20,11 +20,6 @@ public partial class MainWindow : Window
     public WriteableBitmap bitmap;
     public const int LARGURA_TELA = 64;
     public const int ALTURA_TELA = 32;
-    //Cria um relógio de 1ms.
-    DispatcherTimer cpuTimer = new DispatcherTimer
-    {
-        Interval = TimeSpan.FromMilliseconds(1) 
-    };
     //Cria um segundo relógio para os frames.
     DispatcherTimer drawTimer = new DispatcherTimer
     {
@@ -78,19 +73,7 @@ public partial class MainWindow : Window
         {
             cpu.memory[i] = rom[i - 0x200];
         }
-        //Para o timer.
-        cpuTimer.Stop();
-        //Limpa o timer se for um novo ciclo de rom.
-        cpuTimer = null;
-        //Cria o timer novamente.
-        cpuTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(1)
-        };
-        //Atribui o clock ao timer.
-        cpuTimer.Tick += (s, args) => Clock();
-        //Inicia o timer.
-        cpuTimer.Start();
+
         //Para o timer.
         drawTimer.Stop();
         //Limpa o timer se for um novo ciclo de rom.
@@ -100,13 +83,39 @@ public partial class MainWindow : Window
         {
             Interval = TimeSpan.FromMilliseconds(16)
         };
-        //Atribui o render ao timer.
-        drawTimer.Tick += (s, args) => Render();
+        //Executa todas as ações necessárias por frame.
+        drawTimer.Tick += (s, args) =>
+        {
+            //O sistema executa 10 instruções por frame, resultando em um clock aproximado de 600hz.
+            for (int i = 0; i < 10; i++)
+            {
+                /*
+                 * PECULIARIDADE: Verifica se a última operação foi a de desenhar frame. O sistema
+                 * possui uma limitação característica do Chip-8 original conhecida como Display Wait.
+                 * O sistema original só possui a capacidade de desenhar um sprite por frame,
+                 * então se neste ciclo precisamos desenhar um frame, interrompemos as outras operações
+                 * para esperar a renderização. Se não, ignora.
+                 */
+                bool desenhaFrame = Clock();
+                if (desenhaFrame) break;
+            }
+            //Se o timer é maior que zero, decrementa o timer.
+            if (cpu.delayTimer > 0) cpu.delayTimer--;
+            //Se o timer é maior que zero, decrementa o timer e emite um bipe.
+            if (cpu.soundTimer > 0)
+            {
+                //Cada bipe dura 1 frame.
+                Console.Beep(440,16);
+                cpu.soundTimer--;
+            }
+            //Renderiza o frame
+            DesenharFrame(cpu.display);
+        };
         //Inicia o timer.
         drawTimer.Start();
     }
 
-    private void ProcessarCiclo()
+    private bool Clock()
     {
         /*
          * Processo de execução do emulador por ciclo. Começa criando um número de 16 bits com a instrução.
@@ -118,6 +127,9 @@ public partial class MainWindow : Window
         Dispatcher.Invoke(LerTeclas);
         // Processa o opcode atual.
         cpu.Executar(opcode);
+        //PECULIARIDADE: Se a operação for uma de desenhar frame, retorna verdadeiro.
+        if ((opcode & 0xF000) >> 12 == 0xD) return true;
+        return false;
     }
 
     private void Sair(object sender, RoutedEventArgs e)
@@ -160,26 +172,5 @@ public partial class MainWindow : Window
         cpu.keypad[0] = (byte)(Keyboard.IsKeyDown(Key.X) ? 1 : 0);   // X -> 0
         cpu.keypad[11] = (byte)(Keyboard.IsKeyDown(Key.C) ? 1 : 0);  // C -> B
         cpu.keypad[15] = (byte)(Keyboard.IsKeyDown(Key.V) ? 1 : 0);  // V -> F
-    }
-    private void Clock()
-    {
-        //Faz processar o ciclo 5 vezes por 1ms.
-        for (int i = 0; i < 5; i++)
-        {
-            ProcessarCiclo();
-        }
-    }
-
-    private void Render()
-    {
-        DesenharFrame(cpu.display);
-        //Os timers são reduzidos numa frequência de 60hz, então aproveito o timer de frames.
-        if (cpu.delayTimer > 0) cpu.delayTimer--;
-        if (cpu.soundTimer > 0)
-        {
-            //Cada bipe dura 1 frame.
-            Console.Beep(440,16);
-            cpu.soundTimer--;
-        }
     }
 }
