@@ -1,6 +1,6 @@
-# Emulador Chip-8 (TCC)
+# Emulador Chip-8
 
-Este projeto é um **emulador funcional do Chip-8**, desenvolvido em **C# com WPF**, como parte do Trabalho de Conclusão de Curso (TCC). 
+Este projeto é um **emulador funcional do Chip-8**, desenvolvido em **C# com WPF**. 
 O objetivo principal foi explorar conceitos fundamentais de arquitetura de CPUs, instruções de baixo nível e manipulação gráfica, através
 da construção de um sistema que interpreta e executa programas escritos originalmente para o interpretador Chip-8.
 
