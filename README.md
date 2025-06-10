@@ -4,6 +4,22 @@ Este projeto é um **emulador funcional do Chip-8**, desenvolvido em **C# com WP
 O objetivo principal foi explorar conceitos fundamentais de arquitetura de CPUs, instruções de baixo nível e manipulação gráfica, através
 da construção de um sistema que interpreta e executa programas escritos originalmente para o interpretador Chip-8.
 
+## 🛠️ Instalação e Requisitos
+
+- **Sistema Operacional:** Windows 10 ou superior  
+- **.NET:** [.NET 8.0 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (caso use a versão *framework-dependent*)  
+- Nenhuma instalação adicional é necessária para versões *self-contained*
+
+> ⚠️ Este emulador utiliza **WPF**, portanto só funciona em **Windows**.
+
+## 📦 Executar o Emulador
+
+1. Acesse a seção [Releases](https://github.com/Novasker/Chip-8-IFF-Logo/releases) do repositório.
+2. Baixe a versão mais recente publicada (arquivo `.rar`).
+3. Extraia o conteúdo em qualquer pasta.
+4. Execute o arquivo `Chip8.exe`.
+5. Ao abrir o programa, selecione uma ROM válida para iniciar.
+
 ## 🎮 Controles do Teclado
 
 O Chip-8 usa um teclado hexadecimal de 16 teclas, mapeados no emulador por padrão da seguinte forma:
